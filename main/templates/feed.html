@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Twitter</title>
+</head>
+<body>
+    <h1>Mini Twitter</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Tweetar</button>
+    </form>
+
+    <hr>
+
+    {% for post in posts %}
+        <p><strong>{{ post.autor }}</strong>: {{ post.conteudo }}</p>
+        <small>{{ post.data_criacao }}</small>
+        <hr>
+    {% empty %}
+        <p>Nenhum post ainda 😔</p>
+    {% endfor %}
+</body>
+</html>
