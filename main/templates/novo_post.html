@@ -10,6 +10,16 @@
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Publicar</button>
+
+        {% extends 'base.html' %}
+{% block content %}
+  <h2>Novo Post</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Postar</button>
+  </form>
+{% endblock %}
     </form>
 </body>
 </html>
