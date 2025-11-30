@@ -14,7 +14,6 @@ export default function PostCard({ post, currentUser, onLike, onComment }: PostC
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentContent, setCommentContent] = useState('');
 
-  // ✅ CORREÇÃO: Valores padrão para evitar undefined
   const safePost = {
     id: post.id || '',
     author: post.author || { name: 'Usuário', username: 'usuario' },
