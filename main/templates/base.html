@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat da Galera 🐦</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <!-- navbar simples -->
+    <nav class="bg-blue-500 text-white p-4 flex justify-between items-center">
+        <a href="{% url 'feed' %}" class="font-bold text-lg">Chat da Galera</a>
+        <div>
+            {% if user.is_authenticated %}
+                <span class="mr-4">Olá, {{ user.username }} 👋</span>
+                <a href="{% url 'logout' %}" class="bg-white text-blue-600 px-3 py-1 rounded">Sair</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="bg-white text-blue-600 px-3 py-1 rounded">Entrar</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="p-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

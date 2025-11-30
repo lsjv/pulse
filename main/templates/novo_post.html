@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Novo Post</title>
+</head>
+<body>
+    <h1>Criar novo post</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Publicar</button>
+
+        {% extends 'base.html' %}
+{% block content %}
+  <h2>Novo Post</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Postar</button>
+  </form>
+{% endblock %}
+    </form>
+</body>
+</html>

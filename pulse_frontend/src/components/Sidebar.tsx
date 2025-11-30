@@ -65,13 +65,7 @@ export function Sidebar({ currentUser, onLogout }: SidebarProps) {
           <span className="hidden lg:block">Sair</span>
         </Button>
       </div>
-      
-    <button 
-      onClick={onLogout}
-      className="w-full text-left p-3 hover:bg-gray-100 rounded-full text-red-600 font-medium"
-    >
-      Sair
-    </button>
+ 
     </aside>
   );
 }
