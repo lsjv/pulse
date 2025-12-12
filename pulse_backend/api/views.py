@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes  # ← ADICIONE permission_classes aqui
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly  # ← ADICIONE AllowAny aqui
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -13,7 +15,22 @@ from .serializers import (
 
 User = get_user_model()
 
-# ✅ REMOVA completamente a função feed solta daqui (linhas 18-40)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    serializer = UserRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response({
+            'message': 'Usuário registrado com sucesso!',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -114,39 +131,20 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
+   # No views.py, muda o método feed:
     @action(detail=False, methods=['get'])
     def feed(self, request):
-        """Feed corrigido - agora funciona para usuários não autenticados também"""
-        try:
-            if request.user.is_authenticated:
-                # Usuário logado - mostra posts dele e de quem segue
-                if hasattr(request.user, 'following'):
-                    following_ids = request.user.following.values_list('id', flat=True)
-                    posts = Post.objects.filter(
-                        Q(author__in=following_ids) | Q(author=request.user)
-                    ).order_by('-created_at')
-                else:
-                    # Se não tem following, mostra todos os posts
-                    posts = Post.objects.all().order_by('-created_at')
-            else:
-                # Usuário não logado - mostra todos os posts
-                posts = Post.objects.all().order_by('-created_at')[:20]
-            
-            # Paginação
-            page = self.paginate_queryset(posts)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            
-            serializer = self.get_serializer(posts, many=True)
-            return Response(serializer.data)
-            
-        except Exception as e:
-            return Response(
-                {'error': f'Erro no feed: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
+        """Feed público - todos veem todos os posts"""
+        posts = Post.objects.all().order_by('-created_at')
+        
+        page = self.paginate_queryset(posts)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
+        
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()

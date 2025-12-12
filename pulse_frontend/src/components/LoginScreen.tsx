@@ -99,13 +99,13 @@ export default function LoginScreen() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Não tem conta? <span className="text-indigo-600 font-medium">Cadastre-se</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div className="mt-6 text-center">
+      <p className="text-gray-600">
+        Não tem conta?{' '}
+        <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+          Cadastre-se
+        </Link>
+      </p>
+</div>
   );
 }

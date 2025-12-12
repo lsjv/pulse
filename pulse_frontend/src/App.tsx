@@ -42,6 +42,8 @@ function AppRoutes() {
   );
 }
 
+<Route path="/register" element={<RegisterScreen />} />
+
 export default function App() {
   return (
     <AuthProvider>

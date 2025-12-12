@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import CreatePost from './CreatePost';
 import  PostCard  from './PostCard';
 import { postsAPI } from '../services/api';
+  
 
 interface FeedProps {
   currentUser: any;
@@ -165,6 +166,7 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
             )}
           </div>
         </main>
+          
 
         <aside className="hidden lg:block w-80 p-4">
           <div className="bg-gray-100 rounded-2xl p-4 sticky top-4">
