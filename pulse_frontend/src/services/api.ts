@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://sustainable-dominga-nonprecipitative.ngrok-free.dev/api';
+const API_BASE_URL = 'https://pulse-jjzw.onrender.com';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
