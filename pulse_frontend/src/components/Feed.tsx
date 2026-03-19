@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
-import CreatePost from './CreatePost';
-import  PostCard  from './PostCard';
+import { CreatePost } from './CreatePost';
+import { PostCard } from './PostCard';
 import { postsAPI } from '../services/api';
-  
 
 interface FeedProps {
   currentUser: any;
@@ -21,100 +20,100 @@ interface Post {
   image?: string;
 }
 
+const TRENDING = [
+  { category: 'Trending Brasil', tag: '#PulseFest', sub: 'Assunto do momento', color: 'purple' },
+  { category: 'Tecnologia', tag: '#Django', sub: 'Desenvolvimento web', color: 'pink' },
+  { category: 'Tecnologia', tag: '#ReactJS', sub: 'Desenvolvimento web', color: 'yellow' },
+];
+
+const SUGGESTIONS = [
+  { username: '@pulse_user', label: 'Novo no Pulse' },
+  { username: '@dev_brasil', label: 'Popular agora' },
+  { username: '@tech_feed', label: 'Tecnologia' },
+  { username: '@react_br', label: 'Desenvolvimento' },
+];
+
+const dotColor: Record<string, string> = {
+  purple: 'bg-purple-500',
+  pink: 'bg-pink-500',
+  yellow: 'bg-yellow-500',
+};
+
+const textColor: Record<string, string> = {
+  purple: 'text-purple-600',
+  pink: 'text-pink-600',
+  yellow: 'text-yellow-600',
+};
+
+const borderHover: Record<string, string> = {
+  purple: 'hover:border-purple-200',
+  pink: 'hover:border-pink-200',
+  yellow: 'hover:border-yellow-200',
+};
+
 export default function Feed({ currentUser, onLogout }: FeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Carregar posts da API
   const loadPosts = async () => {
     try {
       setLoading(true);
       const response = await postsAPI.getFeed();
-      console.log('📦 Posts carregados:', response);
-      
-      // Adaptar a resposta da API para o formato do frontend
-      const adaptedPosts = response.results || response.map((post: any) => ({
+      const adaptedPosts = (response.results || response).map((post: any) => ({
         id: post.id.toString(),
         author: post.author,
         content: post.content,
         timestamp: post.created_at || post.timestamp,
-        likes: post.likes_count || post.likes,
+        likes: post.likes_count ?? post.likes ?? 0,
         likedBy: post.liked_by || [],
         comments: post.comments || [],
-        image: post.image
+        image: post.image,
       }));
-      
       setPosts(adaptedPosts);
-    } catch (err) {
-      console.error('❌ Erro ao carregar posts:', err);
-      setError('Erro ao carregar o feed');
+    } catch (err: any) {
+      setError('Erro ao carregar o feed. ' + (err.response?.data?.detail || ''));
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  useEffect(() => { loadPosts(); }, []);
 
   const handleCreatePost = async (content: string) => {
     try {
-      const postData = new FormData();
-      postData.append('content', content);
-      
-      const newPost = await postsAPI.createPost(postData);
-      console.log('✅ Post criado:', newPost);
-      
-      // Recarregar posts
+      await postsAPI.createPost(content);
       await loadPosts();
-    } catch (err) {
-      console.error('❌ Erro ao criar post:', err);
+    } catch {
       alert('Erro ao criar post');
     }
   };
 
   const handleLike = async (postId: string) => {
     try {
-      await postsAPI.likePost(parseInt(postId));
-      // Recarregar posts para atualizar likes
+      await postsAPI.likePost(postId);
       await loadPosts();
     } catch (err) {
-      console.error('❌ Erro ao curtir post:', err);
+      console.error('Erro ao curtir post:', err);
     }
   };
 
   const handleComment = async (postId: string, content: string) => {
     try {
-      // TODO: Implementar API de comentários
-      console.log(`Comentário no post ${postId}: ${content}`);
-      // Por enquanto, atualiza localmente
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
-          const newComment = {
-            id: Math.random().toString(36).substr(2, 9),
-            author: currentUser,
-            content,
-            timestamp: new Date().toISOString()
-          };
-          return {
-            ...post,
-            comments: [...post.comments, newComment]
-          };
-        }
-        return post;
-      }));
+      await postsAPI.commentPost(postId, content);
+      await loadPosts();
     } catch (err) {
-      console.error('❌ Erro ao comentar:', err);
+      console.error('Erro ao comentar:', err);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando feed...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mx-auto" />
+          <p className="mt-4 text-gray-600 font-medium">Carregando feed...</p>
+          <p className="text-sm text-gray-400">Preparando os confetes ✨</p>
         </div>
       </div>
     );
@@ -122,36 +121,51 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center text-red-600">
-          <p>{error}</p>
-          <button 
-            onClick={loadPosts}
-            className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded"
-          >
-            Tentar novamente
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-lg max-w-md">
+          <div className="text-5xl mb-4">🎈</div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Algo deu errado</h3>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={loadPosts} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2.5 rounded-full font-semibold hover:opacity-90 transition">
+              Tentar novamente
+            </button>
+            <button onClick={onLogout} className="border border-gray-300 text-gray-600 px-6 py-2.5 rounded-full font-semibold hover:bg-gray-50 transition">
+              Fazer login
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       <div className="flex max-w-7xl mx-auto">
         <Sidebar currentUser={currentUser} onLogout={onLogout} />
-        
-        <main className="flex-1 border-x border-gray-200 bg-white min-h-screen">
-          <div className="sticky top-0 bg-white/80 backdrop-blur-sm border-b border-gray-200 p-4 z-10">
-            <h2 className="text-xl font-bold">Início</h2>
+
+        <main className="flex-1 border-x border-purple-100 bg-white/80 backdrop-blur-sm min-h-screen">
+          <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-purple-100 px-6 py-4 z-10">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              ✨ Pulse Feed
+            </h2>
+            <p className="text-sm text-gray-400">O que está acontecendo?</p>
           </div>
 
           <CreatePost currentUser={currentUser} onCreatePost={handleCreatePost} />
 
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-purple-50">
             {posts.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <p>Nenhum post encontrado. Seja o primeiro a publicar!</p>
+              <div className="p-12 text-center">
+                <div className="text-5xl mb-4">🎊</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Feed vazio!</h3>
+                <p className="text-gray-500 mb-6">Seja o primeiro a compartilhar algo.</p>
+                <button
+                  onClick={() => document.querySelector('textarea')?.focus()}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2.5 rounded-full font-semibold hover:opacity-90 transition"
+                >
+                  Criar primeiro post
+                </button>
               </div>
             ) : (
               posts.map(post => (
@@ -166,26 +180,40 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
             )}
           </div>
         </main>
-          
 
         <aside className="hidden lg:block w-80 p-4">
-          <div className="bg-gray-100 rounded-2xl p-4 sticky top-4">
-            <h3 className="font-bold mb-4">O que está acontecendo</h3>
-            <div className="space-y-4">
-              <div className="hover:bg-gray-200 p-3 rounded-lg cursor-pointer transition-colors">
-                <p className="text-gray-600 text-sm">Trending no Brasil</p>
-                <p className="text-gray-900 font-medium">#PulseApp</p>
-                <p className="text-gray-600 text-sm">12.5k pulses</p>
-              </div>
-              <div className="hover:bg-gray-200 p-3 rounded-lg cursor-pointer transition-colors">
-                <p className="text-gray-600 text-sm">Tecnologia · Trending</p>
-                <p className="text-gray-900 font-medium">#React</p>
-                <p className="text-gray-600 text-sm">8.3k pulses</p>
-              </div>
-              <div className="hover:bg-gray-200 p-3 rounded-lg cursor-pointer transition-colors">
-                <p className="text-gray-600 text-sm">Esportes · Trending</p>
-                <p className="text-gray-900 font-medium">#Futebol</p>
-                <p className="text-gray-600 text-sm">15.2k pulses</p>
+          <div className="bg-white rounded-2xl p-5 sticky top-4 border border-purple-100 shadow-sm">
+            <h3 className="font-bold text-gray-800 mb-4">✨ Em Destaque</h3>
+            <div className="space-y-1">
+              {TRENDING.map(({ category, tag, sub, color }) => (
+                <div key={tag} className={`hover:bg-gray-50 px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent ${borderHover[color]}`}>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className={`w-2 h-2 rounded-full ${dotColor[color]}`} />
+                    <p className={`text-xs font-medium ${textColor[color]}`}>{category}</p>
+                  </div>
+                  <p className="text-gray-900 font-bold text-sm">{tag}</p>
+                  <p className="text-gray-400 text-xs">{sub}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 pt-5 border-t border-gray-100">
+              <h4 className="font-bold text-gray-800 mb-3">Quem seguir</h4>
+              <div className="space-y-2">
+                {SUGGESTIONS.map(({ username, label }) => (
+                  <div key={username} className="flex items-center justify-between hover:bg-gray-50 px-2 py-2 rounded-xl transition">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm text-gray-900">{username}</p>
+                        <p className="text-xs text-gray-400">{label}</p>
+                      </div>
+                    </div>
+                    <button className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition font-medium">
+                      Seguir
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

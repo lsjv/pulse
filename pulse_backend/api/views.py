@@ -1,11 +1,10 @@
-from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action, api_view, permission_classes  # ← ADICIONE permission_classes aqui
+from rest_framework import viewsets, status, permissions,serializers
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly  # ← ADICIONE AllowAny aqui
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from .models import Post, Like, Comment, Notification
 from .serializers import (
     UserSerializer, UserRegistrationSerializer,
@@ -15,6 +14,7 @@ from .serializers import (
 
 User = get_user_model()
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
@@ -23,13 +23,40 @@ def register_user(request):
         user = serializer.save()
         return Response({
             'message': 'Usuário registrado com sucesso!',
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email
-            }
+            'user': {'id': user.id, 'username': user.username, 'email': user.email}
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username', '').strip()
+        password = request.data.get('password', '')
+        password2 = request.data.get('password2', '')
+        email = request.data.get('email', '').strip()
+
+        if not username or not password:
+            return Response({'error': 'Username e senha são obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
+        if password != password2:
+            return Response({'error': 'Senhas não coincidem'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username já existe'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email if email else f'{username}@pulse.festa',
+                password=password
+            )
+            return Response({
+                'message': 'Conta criada com sucesso!',
+                'username': user.username,
+                'id': user.id
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -65,15 +92,13 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def followers(self, request, pk=None):
         user = self.get_object()
-        followers = user.followers.all()
-        serializer = UserSerializer(followers, many=True)
+        serializer = UserSerializer(user.followers.all(), many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def following(self, request, pk=None):
         user = self.get_object()
-        following = user.following.all()
-        serializer = UserSerializer(following, many=True)
+        serializer = UserSerializer(user.following.all(), many=True)
         return Response(serializer.data)
 
 
@@ -86,11 +111,22 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_queryset(self):
-        queryset = Post.objects.all()
+        queryset = Post.objects.all().order_by('-created_at')
         user_id = self.request.query_params.get('user', None)
         if user_id:
             queryset = queryset.filter(author__id=user_id)
         return queryset
+
+    # ← feed DENTRO da classe, indentação correta
+    @action(detail=False, methods=['get'])
+    def feed(self, request):
+        posts = Post.objects.all().order_by('-created_at')
+        page = self.paginate_queryset(posts)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):
@@ -98,17 +134,20 @@ class PostViewSet(viewsets.ModelViewSet):
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
             if post.author != request.user:
-                Notification.objects.create(recipient=post.author, sender=request.user, notification_type='like', post=post)
+                Notification.objects.create(
+                    recipient=post.author, sender=request.user,
+                    notification_type='like', post=post
+                )
             return Response({'status': 'curtido'}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'status': 'já curtido'}, status=status.HTTP_200_OK)
+            like.delete()
+            return Response({'status': 'descurtido'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def unlike(self, request, pk=None):
         post = self.get_object()
         try:
-            like = Like.objects.get(user=request.user, post=post)
-            like.delete()
+            Like.objects.get(user=request.user, post=post).delete()
             return Response({'status': 'descurtido'})
         except Like.DoesNotExist:
             return Response({'error': 'Você não curtiu este post'}, status=status.HTTP_400_BAD_REQUEST)
@@ -120,31 +159,19 @@ class PostViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save(author=request.user, post=post)
             if post.author != request.user:
-                Notification.objects.create(recipient=post.author, sender=request.user, notification_type='comment', post=post)
+                Notification.objects.create(
+                    recipient=post.author, sender=request.user,
+                    notification_type='comment', post=post
+                )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['get'])
     def comments(self, request, pk=None):
         post = self.get_object()
-        comments = post.comments.all()
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(post.comments.all(), many=True)
         return Response(serializer.data)
 
-   # No views.py, muda o método feed:
-    @action(detail=False, methods=['get'])
-    def feed(self, request):
-        """Feed público - todos veem todos os posts"""
-        posts = Post.objects.all().order_by('-created_at')
-        
-        page = self.paginate_queryset(posts)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        
-        serializer = self.get_serializer(posts, many=True)
-        return Response(serializer.data)
-        
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -173,3 +200,39 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notification.is_read = True
         notification.save()
         return Response({'status': 'marcada como lida'})
+    
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import authenticate
+
+class UsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'username'
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        user = authenticate(request=self.context.get('request'), username=username, password=password)
+        
+        if not user:
+            # Tenta buscar pelo username e autenticar pelo email
+            try:
+                user_obj = User.objects.get(username=username)
+                user = authenticate(request=self.context.get('request'), email=user_obj.email, password=password)
+            except User.DoesNotExist:
+                pass
+
+        if not user:
+            raise serializers.ValidationError('Usuário ou senha inválidos')
+
+        refresh = self.get_token(user)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'username': user.username,
+            'id': str(user.id),
+        }
+
+
+class UsernameTokenObtainPairView(TokenObtainPairView):
+    serializer_class = UsernameTokenObtainPairSerializer

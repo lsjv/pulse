@@ -1690,3 +1690,20 @@ html {
   syntax: "*";
   inherits: false
 }
+/* pulse_frontend/src/index.css - ADICIONAR */
+.festa-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.festa-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.festa-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.festa-btn:hover {
+  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+}

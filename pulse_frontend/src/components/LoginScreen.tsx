@@ -1,111 +1,107 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Activity } from 'lucide-react';
+import { api } from "../services/api";
+import { Activity, Sparkles } from "lucide-react";
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState("");
+interface LoginScreenProps {
+  onLogin: (user: any) => void;
+}
+
+export default function LoginScreen({ onLogin }: LoginScreenProps) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
-    if (!email || !password) {
-      alert("Preencha email e senha");
+    if (!username || !password) {
+      setError("Preencha usuário e senha");
       return;
     }
-
     setLoading(true);
+    setError("");
     try {
-      console.log('📤 Tentando login com:', { email, password });
-      
-      await login(email, password);
-      
-      console.log('✅ Login bem-sucedido!');
+      const response = await api.post('/auth/login/', { username, password });
+      console.log('resposta do login:', response.data);
+      localStorage.setItem('access', response.data.access);
+      localStorage.setItem('refresh', response.data.refresh);
+      onLogin({ username });
       navigate("/feed");
-    } catch (err) {
-      console.error('❌ Erro no login:', err);
-      alert("Credenciais inválidas");
+    } catch (err: any) {
+      console.log('erro completo:', err);
+      console.log('resposta do erro:', err.response?.data);
+      console.log('status:', err.response?.status);
+      setError("Usuário ou senha inválidos");
     } finally {
       setLoading(false);
     }
   }
 
-  function handleKeyPress(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') {
-      handleSubmit(e);
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-yellow-400 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex items-center justify-center mb-8">
-            <div className="bg-indigo-600 p-3 rounded-full">
+        <div className="bg-white rounded-3xl shadow-2xl p-8">
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-3 rounded-2xl relative shadow-lg mb-3">
               <Activity className="w-8 h-8 text-white" />
+              <Sparkles className="w-4 h-4 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
             </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Pulse Festa
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">Entre na festa ✨</p>
           </div>
-          
-          <h1 className="text-center text-2xl font-bold text-indigo-600 mb-2">Pulse</h1>
-          <p className="text-center text-gray-600 mb-8">
-            Entre na conversa
-          </p>
+
+          {error && (
+            <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-gray-700 mb-2">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={handleKeyPress}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-gray-700 mb-2">
-                Senha
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={handleKeyPress}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <input
+              type="text"
+              placeholder="Nome de usuário"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition text-gray-800 placeholder-gray-400"
               disabled={loading}
+            />
+            <input
+              type="password"
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition text-gray-800 placeholder-gray-400"
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              disabled={loading || !username || !password}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md mt-2"
             >
-              {loading ? "Entrando..." : "Entrar"}
-            </Button>
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Entrando...
+                </span>
+              ) : 'Entrar'}
+            </button>
           </form>
 
-    <div className="mt-6 text-center">
-      <p className="text-gray-600">
-        Não tem conta?{' '}
-        <Link to="/register" className="text-indigo-600 font-medium hover:underline">
-          Cadastre-se
-        </Link>
-      </p>
-</div>
+          <p className="text-center text-gray-400 text-sm mt-6">
+            Novo por aqui?{" "}
+            <button
+              onClick={() => navigate('/register')}
+              className="text-purple-600 font-semibold hover:underline"
+            >
+              Crie sua conta
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

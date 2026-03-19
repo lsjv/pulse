@@ -1,183 +1,111 @@
-
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { authAPI } from '../services/api';
-import { Activity } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
+import { Activity, Sparkles } from "lucide-react";
 
-export default function RegisterScreen() {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    password2: '',
-    firstName: '',
-    lastName: ''
-  });
+interface RegisterScreenProps {
+  onRegister: (user: any) => void;
+}
+
+export default function RegisterScreen({ onRegister }: RegisterScreenProps) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
-    if (formData.password !== formData.password2) {
-      setError('As senhas não coincidem');
+    if (!username || !password) {
+      setError("Preencha todos os campos");
       return;
     }
-
-    if (formData.password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres');
+    if (password.length < 4) {
+      setError("Senha deve ter pelo menos 4 caracteres");
       return;
     }
-
     setLoading(true);
+    setError("");
     try {
-      await authAPI.register(formData);
-      alert('Cadastro realizado com sucesso! Faça login.');
-      navigate('/login');
+      const response = await api.post('/auth/register/', {
+        username,
+        password,
+        password2: password,
+      });
+      onRegister({ username });
+      navigate('/feed');
     } catch (err: any) {
-      const errorMsg = err.response?.data || 'Erro ao cadastrar';
-      setError(typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg);
+      setError(err.response?.data?.error || 'Erro ao criar conta');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-yellow-400 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex items-center justify-center mb-8">
-            <div className="bg-indigo-600 p-3 rounded-full">
+        <div className="bg-white rounded-3xl shadow-2xl p-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-3 rounded-2xl relative shadow-lg mb-3">
               <Activity className="w-8 h-8 text-white" />
+              <Sparkles className="w-4 h-4 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
             </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Pulse Festa
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">Crie sua conta ✨</p>
           </div>
-          
-          <h1 className="text-center text-2xl font-bold text-indigo-600 mb-2">
-            Criar Conta
-          </h1>
-          <p className="text-center text-gray-600 mb-8">
-            Junte-se ao Pulse
-          </p>
 
+          {/* Erro */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center">
               {error}
             </div>
           )}
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-gray-700 mb-2 text-sm">
-                  Nome
-                </label>
-                <Input
-                  name="firstName"
-                  placeholder="Seu nome"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2 text-sm">
-                  Sobrenome
-                </label>
-                <Input
-                  name="lastName"
-                  placeholder="Seu sobrenome"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2 text-sm">
-                Nome de usuário
-              </label>
-              <Input
-                name="username"
-                placeholder="seu_usuario"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                minLength={3}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2 text-sm">
-                Email
-              </label>
-              <Input
-                name="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2 text-sm">
-                Senha
-              </label>
-              <Input
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={6}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2 text-sm">
-                Confirmar Senha
-              </label>
-              <Input
-                name="password2"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password2}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <input
+              type="text"
+              placeholder="Escolha um nome de usuário"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition text-gray-800 placeholder-gray-400"
               disabled={loading}
+            />
+            <input
+              type="password"
+              placeholder="Senha (mínimo 4 caracteres)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition text-gray-800 placeholder-gray-400"
+              disabled={loading}
+            />
+
+            <button
+              type="submit"
+              disabled={loading || !username || !password}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md mt-2"
             >
-              {loading ? "Criando conta..." : "Criar Conta"}
-            </Button>
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Criando conta...
+                </span>
+              ) : 'Criar conta'}
+            </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Já tem uma conta?{' '}
-              <Link to="/login" className="text-indigo-600 font-medium hover:underline">
-                Entre aqui
-              </Link>
-            </p>
-          </div>
+          <p className="text-center text-gray-400 text-sm mt-6">
+            Já tem conta?{" "}
+            <button
+              onClick={() => navigate('/login')}
+              className="text-purple-600 font-semibold hover:underline"
+            >
+              Entre aqui
+            </button>
+          </p>
         </div>
       </div>
     </div>
