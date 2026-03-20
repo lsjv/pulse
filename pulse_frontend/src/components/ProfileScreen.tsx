@@ -75,9 +75,16 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
             {/* Avatar */}
             <div className="flex flex-col items-center gap-4 pt-6">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full border-4 border-purple-300 shadow-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div
+                  className="rounded-full border-4 border-purple-300 shadow-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"
+                  style={{ width: 96, height: 96, minWidth: 96, minHeight: 96 }}
+                >
                   {avatarPreview ? (
-                    <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
+                    <img
+                      src={avatarPreview}
+                      alt="avatar"
+                      style={{ width: 96, height: 96, objectFit: 'cover' }}
+                    />
                   ) : (
                     <span className="text-white text-3xl font-bold">
                       {currentUser?.name?.[0]?.toUpperCase() || currentUser?.username?.[0]?.toUpperCase() || 'U'}
