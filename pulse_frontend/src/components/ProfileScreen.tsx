@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Camera, Save, ArrowLeft } from 'lucide-react';
 import { usersAPI } from '../services/api';
 
@@ -46,7 +45,7 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
       onUpdateUser(updatedUser);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch {
       setError('Erro ao salvar perfil. Tenta novamente.');
     } finally {
       setLoading(false);
@@ -74,14 +73,17 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
 
           <div className="max-w-xl mx-auto p-6 space-y-6">
             {/* Avatar */}
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 pt-6">
               <div className="relative">
-                <Avatar className="w-24 h-24 border-4 border-purple-300 shadow-lg">
-                  <AvatarImage src={avatarPreview} />
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-3xl">
-                    {currentUser?.name?.[0]?.toUpperCase() || currentUser?.username?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="w-24 h-24 rounded-full border-4 border-purple-300 shadow-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white text-3xl font-bold">
+                      {currentUser?.name?.[0]?.toUpperCase() || currentUser?.username?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="absolute bottom-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-full shadow-lg hover:opacity-90 transition"
