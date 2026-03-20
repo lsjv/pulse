@@ -110,5 +110,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL = 'api.User'
 
+
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev']
 CORS_ALLOW_ALL_ORIGINS = True
