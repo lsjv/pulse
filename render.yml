@@ -2,8 +2,9 @@ services:
   - type: web
     name: pulse-frontend
     env: static
-    buildCommand: cd pulse_frontend && npm install && node node_modules/vite/bin/vite.js build
-    staticPublishPath: pulse_frontend/build
+    rootDir: pulse_frontend
+    buildCommand: npm install && node node_modules/vite/bin/vite.js build
+    staticPublishPath: build
     routes:
       - type: rewrite
         source: /*
