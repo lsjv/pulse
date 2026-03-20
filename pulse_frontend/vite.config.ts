@@ -49,10 +49,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  build: {
+ build: {
     target: 'esnext',
-    outDir: 'build',
-  },
+    outDir: 'dist',
+},
   server: {
     port: 5173, // Mudei para 5173 (padrão do Vite)
     host: true, // Permite acesso na rede
