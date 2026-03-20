@@ -4,8 +4,8 @@ import { FestaCelebration } from './components/FestaCelebration';
 import LoginScreen from './components/LoginScreen';
 import RegisterScreen from './components/RegisterScreen';
 import Feed from './components/Feed';
-import { usersAPI } from './services/api';
 import ProfileScreen from './components/ProfileScreen';
+import { usersAPI } from './services/api';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -16,7 +16,6 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Carrega usuário completo do localStorage + API
   useEffect(() => {
     const token = localStorage.getItem('access');
     if (token) {
@@ -72,30 +71,13 @@ export default function App() {
       {showCelebration && <FestaCelebration />}
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <Routes>
-          <Route
-            path="/login"
-            element={user ? <Navigate to="/feed" /> : <LoginScreen onLogin={handleLogin} />}
-          />
-          <Route
-            path="/register"
-            element={user ? <Navigate to="/feed" /> : <RegisterScreen onRegister={handleRegister} />}
-          />
-          <Route
-            path="/feed"
-            element={user ? <Feed currentUser={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/profile"
-            element={user ? <Feed currentUser={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> : <Navigate to="/login" />}
-          />
+          <Route path="/login" element={user ? <Navigate to="/feed" /> : <LoginScreen onLogin={handleLogin} />} />
+          <Route path="/register" element={user ? <Navigate to="/feed" /> : <RegisterScreen onRegister={handleRegister} />} />
+          <Route path="/feed" element={user ? <Feed currentUser={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={user ? <ProfileScreen currentUser={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> : <Navigate to="/login" />} />
           <Route path="/" element={<Navigate to="/login" />} />
-          <Route
-  path="/profile"
-  element={user ? <ProfileScreen currentUser={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> : <Navigate to="/login" />}
-/>
         </Routes>
       </div>
     </BrowserRouter>
   );
 }
-
