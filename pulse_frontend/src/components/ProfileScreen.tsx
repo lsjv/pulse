@@ -74,36 +74,44 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
           <div className="max-w-xl mx-auto p-6 space-y-6">
             {/* Avatar */}
             <div className="flex flex-col items-center gap-4 pt-6">
-              <div className="relative">
-                <div
-                  className="rounded-full border-4 border-purple-300 shadow-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"
-                  style={{ width: 96, height: 96, minWidth: 96, minHeight: 96 }}
-                >
+              <div className="relative" style={{ width: 96, height: 96 }}>
+                <div style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: '50%',
+                  border: '4px solid #d8b4fe',
+                  overflow: 'hidden',
+                  background: 'linear-gradient(135deg, #9333ea, #ec4899)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }}>
                   {avatarPreview ? (
-                    <img
-                      src={avatarPreview}
-                      alt="avatar"
-                      style={{ width: 96, height: 96, objectFit: 'cover' }}
-                    />
+                    <img src={avatarPreview} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <span className="text-white text-3xl font-bold">
+                    <span style={{ color: 'white', fontSize: 32, fontWeight: 'bold' }}>
                       {currentUser?.name?.[0]?.toUpperCase() || currentUser?.username?.[0]?.toUpperCase() || 'U'}
                     </span>
                   )}
                 </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-full shadow-lg hover:opacity-90 transition"
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    background: 'linear-gradient(135deg, #9333ea, #ec4899)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    padding: 8,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  }}
                 >
-                  <Camera className="w-4 h-4" />
+                  <Camera style={{ width: 16, height: 16, color: 'white' }} />
                 </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               </div>
               <p className="text-sm text-gray-400">Clique na câmera para trocar a foto</p>
             </div>
