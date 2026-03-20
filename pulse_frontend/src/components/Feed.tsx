@@ -7,6 +7,7 @@ import { postsAPI } from '../services/api';
 interface FeedProps {
   currentUser: any;
   onLogout: () => void;
+  onUpdateUser: (user: any) => void;
 }
 
 interface Post {
@@ -26,35 +27,15 @@ const TRENDING = [
   { category: 'Tecnologia', tag: '#ReactJS', sub: 'Desenvolvimento web', color: 'yellow' },
 ];
 
-const SUGGESTIONS = [
-  { username: '@pulse_user', label: 'Novo no Pulse' },
-  { username: '@dev_brasil', label: 'Popular agora' },
-  { username: '@tech_feed', label: 'Tecnologia' },
-  { username: '@react_br', label: 'Desenvolvimento' },
-];
+const dotColor: Record<string, string> = { purple: 'bg-purple-500', pink: 'bg-pink-500', yellow: 'bg-yellow-500' };
+const textColor: Record<string, string> = { purple: 'text-purple-600', pink: 'text-pink-600', yellow: 'text-yellow-600' };
+const borderHover: Record<string, string> = { purple: 'hover:border-purple-200', pink: 'hover:border-pink-200', yellow: 'hover:border-yellow-200' };
 
-const dotColor: Record<string, string> = {
-  purple: 'bg-purple-500',
-  pink: 'bg-pink-500',
-  yellow: 'bg-yellow-500',
-};
-
-const textColor: Record<string, string> = {
-  purple: 'text-purple-600',
-  pink: 'text-pink-600',
-  yellow: 'text-yellow-600',
-};
-
-const borderHover: Record<string, string> = {
-  purple: 'hover:border-purple-200',
-  pink: 'hover:border-pink-200',
-  yellow: 'hover:border-yellow-200',
-};
-
-export default function Feed({ currentUser, onLogout }: FeedProps) {
+export default function Feed({ currentUser, onLogout, onUpdateUser }: FeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [users, setUsers] = useState<any[]>([]);
 
   const loadPosts = async () => {
     try {
@@ -78,7 +59,16 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
     }
   };
 
-  useEffect(() => { loadPosts(); }, []);
+  const loadUsers = async () => {
+    try {
+      const { usersAPI } = await import('../services/api');
+      const response = await usersAPI.getUsers();
+      const allUsers = response.results || response;
+      setUsers(allUsers.filter((u: any) => u.id !== currentUser?.id).slice(0, 4));
+    } catch {}
+  };
+
+  useEffect(() => { loadPosts(); loadUsers(); }, []);
 
   const handleCreatePost = async (content: string) => {
     try {
@@ -105,6 +95,14 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
     } catch (err) {
       console.error('Erro ao comentar:', err);
     }
+  };
+
+  const handleFollow = async (userId: string) => {
+    try {
+      const { usersAPI } = await import('../services/api');
+      await usersAPI.followUser(userId);
+      await loadUsers();
+    } catch {}
   };
 
   if (loading) {
@@ -142,7 +140,7 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       <div className="flex max-w-7xl mx-auto">
-        <Sidebar currentUser={currentUser} onLogout={onLogout} />
+        <Sidebar currentUser={currentUser} onLogout={onLogout} onUpdateUser={onUpdateUser} />
 
         <main className="flex-1 border-x border-purple-100 bg-white/80 backdrop-blur-sm min-h-screen">
           <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-purple-100 px-6 py-4 z-10">
@@ -200,20 +198,27 @@ export default function Feed({ currentUser, onLogout }: FeedProps) {
             <div className="mt-6 pt-5 border-t border-gray-100">
               <h4 className="font-bold text-gray-800 mb-3">Quem seguir</h4>
               <div className="space-y-2">
-                {SUGGESTIONS.map(({ username, label }) => (
-                  <div key={username} className="flex items-center justify-between hover:bg-gray-50 px-2 py-2 rounded-xl transition">
+                {users.length > 0 ? users.map((u: any) => (
+                  <div key={u.id} className="flex items-center justify-between hover:bg-gray-50 px-2 py-2 rounded-xl transition">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full shrink-0" />
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-bold">
+                        {u.name?.[0]?.toUpperCase() || u.username?.[0]?.toUpperCase() || 'U'}
+                      </div>
                       <div>
-                        <p className="font-medium text-sm text-gray-900">{username}</p>
-                        <p className="text-xs text-gray-400">{label}</p>
+                        <p className="font-medium text-sm text-gray-900">@{u.username}</p>
+                        <p className="text-xs text-gray-400">{u.followers_count} seguidores</p>
                       </div>
                     </div>
-                    <button className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition font-medium">
+                    <button
+                      onClick={() => handleFollow(u.id)}
+                      className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition font-medium"
+                    >
                       Seguir
                     </button>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-xs text-gray-400 text-center py-2">Nenhum usuário encontrado</p>
+                )}
               </div>
             </div>
           </div>

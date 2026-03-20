@@ -1,26 +1,28 @@
 import { Activity, Home, Search, Bell, Mail, User, LogOut, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   currentUser: any;
   onLogout: () => void;
+  onUpdateUser: (user: any) => void;
 }
 
 export function Sidebar({ currentUser, onLogout }: SidebarProps) {
+  const navigate = useNavigate();
   const user = currentUser || { name: 'Usuário', username: 'usuario', avatar: '' };
 
   const navItems = [
-    { icon: Home, label: 'Início', hover: 'hover:bg-purple-100 hover:text-purple-600' },
-    { icon: Search, label: 'Explorar', hover: 'hover:bg-pink-100 hover:text-pink-600' },
-    { icon: Bell, label: 'Notificações', hover: 'hover:bg-yellow-100 hover:text-yellow-700' },
-    { icon: Mail, label: 'Mensagens', hover: 'hover:bg-purple-100 hover:text-purple-600' },
-    { icon: User, label: 'Perfil', hover: 'hover:bg-pink-100 hover:text-pink-600' },
+    { icon: Home, label: 'Início', hover: 'hover:bg-purple-100 hover:text-purple-600', action: () => navigate('/feed') },
+    { icon: Search, label: 'Explorar', hover: 'hover:bg-pink-100 hover:text-pink-600', action: () => {} },
+    { icon: Bell, label: 'Notificações', hover: 'hover:bg-yellow-100 hover:text-yellow-700', action: () => {} },
+    { icon: Mail, label: 'Mensagens', hover: 'hover:bg-purple-100 hover:text-purple-600', action: () => {} },
+    { icon: User, label: 'Perfil', hover: 'hover:bg-pink-100 hover:text-pink-600', action: () => navigate('/profile') },
   ];
 
   return (
     <aside className="w-20 lg:w-64 p-4 flex flex-col h-screen sticky top-0 border-r border-purple-100 bg-gradient-to-b from-white to-purple-50">
-      {/* Logo */}
       <div className="flex items-center gap-2 mb-8 px-2">
         <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-2 rounded-full relative shadow-lg">
           <Activity className="w-6 h-6 text-white" />
@@ -31,12 +33,12 @@ export function Sidebar({ currentUser, onLogout }: SidebarProps) {
         </span>
       </div>
 
-      {/* Navegação */}
       <nav className="flex-1 space-y-1">
-        {navItems.map(({ icon: Icon, label, hover }) => (
+        {navItems.map(({ icon: Icon, label, hover, action }) => (
           <Button
             key={label}
             variant="ghost"
+            onClick={action}
             className={`w-full justify-start gap-4 px-4 transition-all hover:scale-105 ${hover}`}
           >
             <Icon className="w-5 h-5 shrink-0" />
@@ -45,9 +47,11 @@ export function Sidebar({ currentUser, onLogout }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Usuário e Logout */}
       <div className="border-t border-purple-200 pt-4 space-y-2">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100 cursor-pointer transition-all">
+        <div
+          onClick={() => navigate('/profile')}
+          className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100 cursor-pointer transition-all"
+        >
           <Avatar className="border-2 border-purple-300 w-10 h-10 shrink-0">
             <AvatarImage src={user.avatar} />
             <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
@@ -55,10 +59,8 @@ export function Sidebar({ currentUser, onLogout }: SidebarProps) {
             </AvatarFallback>
           </Avatar>
           <div className="hidden lg:block flex-1 min-w-0">
-            <p className="text-gray-900 truncate font-medium">{user.name}</p>
-            <p className="text-purple-600 truncate text-sm">
-              @{user.username || user.name?.toLowerCase()?.replace(/\s+/g, '')}
-            </p>
+            <p className="text-gray-900 truncate font-medium">{user.name || user.username}</p>
+            <p className="text-purple-600 truncate text-sm">@{user.username}</p>
           </div>
         </div>
 

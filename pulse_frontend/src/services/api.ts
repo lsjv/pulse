@@ -40,3 +40,19 @@ export const postsAPI = {
   commentPost: (postId: string, content: string) =>
     api.post(`/posts/${postId}/comment/`, { content }).then(res => res.data),
 };
+export const usersAPI = {
+  getMe: () =>
+    api.get('/users/me/').then(res => res.data),
+
+  updateMe: (data: FormData) =>
+    api.patch('/users/me/', data).then(res => res.data),
+    
+  getUsers: () =>
+    api.get('/users/').then(res => res.data),
+
+  followUser: (userId: string) =>
+    api.post(`/users/${userId}/follow/`).then(res => res.data),
+
+  unfollowUser: (userId: string) =>
+    api.post(`/users/${userId}/unfollow/`).then(res => res.data),
+};
