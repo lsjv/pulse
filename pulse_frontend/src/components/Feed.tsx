@@ -70,9 +70,9 @@ export default function Feed({ currentUser, onLogout, onUpdateUser }: FeedProps)
 
   useEffect(() => { loadPosts(); loadUsers(); }, []);
 
-  const handleCreatePost = async (content: string) => {
+  const handleCreatePost = async (content: string, image?: File) => {
     try {
-      await postsAPI.createPost(content);
+      await postsAPI.createPost(content, image);
       await loadPosts();
     } catch {
       alert('Erro ao criar post');

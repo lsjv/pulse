@@ -33,8 +33,14 @@ export const postsAPI = {
   getFeed: () =>
     api.get('/posts/feed/').then(res => res.data),
 
-  createPost: (content: string) =>
-    api.post('/posts/', { content }).then(res => res.data),
+  createPost: (content: string, image?: File) => {
+    const formData = new FormData();
+    formData.append('content', content);
+    if (image) formData.append('image', image);
+    return api.post('/posts/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(res => res.data);
+  },
 
   likePost: (postId: string) =>
     api.post(`/posts/${postId}/like/`).then(res => res.data),
