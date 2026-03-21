@@ -58,7 +58,6 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
         <Sidebar currentUser={currentUser} onLogout={onLogout} onUpdateUser={onUpdateUser} />
 
         <main className="flex-1 border-x border-purple-100 bg-white/80 backdrop-blur-sm min-h-screen">
-          {/* Header */}
           <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-purple-100 px-6 py-4 z-10 flex items-center gap-4">
             <button onClick={() => navigate('/feed')} className="text-gray-500 hover:text-purple-600 transition">
               <ArrowLeft className="w-5 h-5" />
@@ -71,20 +70,15 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
             </div>
           </div>
 
-          <div className="max-w-xl mx-auto p-6 space-y-6">
+          <div className="max-w-xl mx-auto p-6 space-y-6 pb-10">
             {/* Avatar */}
             <div className="flex flex-col items-center gap-4 pt-6">
               <div className="relative" style={{ width: 96, height: 96 }}>
                 <div style={{
-                  width: 96,
-                  height: 96,
-                  borderRadius: '50%',
-                  border: '4px solid #d8b4fe',
-                  overflow: 'hidden',
+                  width: 96, height: 96, borderRadius: '50%',
+                  border: '4px solid #d8b4fe', overflow: 'hidden',
                   background: 'linear-gradient(135deg, #9333ea, #ec4899)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 }}>
                   {avatarPreview ? (
@@ -98,15 +92,10 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    right: 0,
+                    position: 'absolute', bottom: 0, right: 0,
                     background: 'linear-gradient(135deg, #9333ea, #ec4899)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    padding: 8,
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    border: 'none', borderRadius: '50%', padding: 8,
+                    cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                   }}
                 >
                   <Camera style={{ width: 16, height: 16, color: 'white' }} />
@@ -170,7 +159,6 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
               </div>
             </div>
 
-            {/* Erro / Sucesso */}
             {error && (
               <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center">
                 {error}
@@ -182,7 +170,6 @@ export default function ProfileScreen({ currentUser, onLogout, onUpdateUser }: P
               </div>
             )}
 
-            {/* Botão salvar */}
             <button
               onClick={handleSave}
               disabled={loading}
