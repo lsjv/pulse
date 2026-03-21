@@ -26,6 +26,7 @@ export function PostCard({ post, currentUser, onLike, onComment }: PostCardProps
     comments: post.comments || [],
     created_at: post.created_at || post.timestamp || new Date().toISOString(),
     liked_by_user: post.liked_by_user || post.likedBy?.includes(currentUser?.id) || false,
+    image: post.image || null,
   };
 
   const handleLike = () => {
@@ -88,6 +89,15 @@ export function PostCard({ post, currentUser, onLike, onComment }: PostCardProps
           {/* Conteúdo */}
           <p className="text-gray-800 mt-2 whitespace-pre-wrap leading-relaxed">{safePost.content}</p>
 
+          {/* Imagem do post */}
+          {safePost.image && (
+            <img
+              src={safePost.image}
+              alt="imagem do post"
+              className="mt-3 rounded-2xl max-h-96 w-full object-cover border border-purple-100"
+            />
+          )}
+
           {/* Ações */}
           <div className="flex items-center gap-1 mt-4 -ml-2">
             <button
@@ -122,7 +132,6 @@ export function PostCard({ post, currentUser, onLike, onComment }: PostCardProps
           {/* Seção de comentários */}
           {showComments && (
             <div className="mt-4 space-y-4">
-              {/* Input novo comentário */}
               <div className="flex gap-3">
                 <Avatar className="w-8 h-8 border-2 border-purple-200 shrink-0">
                   <AvatarImage src={currentUser?.avatar} />
@@ -151,7 +160,6 @@ export function PostCard({ post, currentUser, onLike, onComment }: PostCardProps
                 </div>
               </div>
 
-              {/* Lista de comentários */}
               {safePost.comments.length > 0 && (
                 <div className="space-y-3 pl-4 border-l-2 border-purple-100">
                   {safePost.comments.map((comment: any) => (
