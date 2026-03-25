@@ -61,7 +61,7 @@ export function CreatePost({ currentUser, onCreatePost }: CreatePostProps) {
 
         <div className="flex-1">
           <textarea
-            placeholder="O que está acontecendo na festa? ✨"
+            placeholder="O que está acontecendo na apresentaçao? ✨"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.ctrlKey || e.metaKey) && handleSubmit()}
