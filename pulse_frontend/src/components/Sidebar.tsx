@@ -23,13 +23,14 @@ export function Sidebar({ currentUser, onLogout }: SidebarProps) {
 
   return (
     <aside className="w-20 lg:w-64 p-4 flex flex-col h-screen sticky top-0 border-r border-purple-100 bg-gradient-to-b from-white to-purple-50">
-      <div className="flex items-center gap-2 mb-8 px-2">
-        <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-2 rounded-full relative shadow-lg">
-          <Activity className="w-6 h-6 text-white" />
-          <Sparkles className="w-4 h-4 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
-        </div>
+      {/* Logo */}
+      <div
+        className="flex items-center gap-2 mb-8 px-2 cursor-pointer"
+        onClick={() => navigate('/feed')}
+      >
+        <img src="/logo.png" alt="Pulse" className="w-10 h-10 object-contain" />
         <span className="hidden lg:block text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-          Pulse Festa
+          Pulse
         </span>
       </div>
 

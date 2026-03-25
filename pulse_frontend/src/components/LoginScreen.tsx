@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import { Activity, Sparkles } from "lucide-react";
 
 interface LoginScreenProps {
   onLogin: (user: any) => void;
@@ -24,15 +23,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setError("");
     try {
       const response = await api.post('/auth/login/', { username, password });
-      console.log('resposta do login:', response.data);
       localStorage.setItem('access', response.data.access);
       localStorage.setItem('refresh', response.data.refresh);
       onLogin({ username });
       navigate("/feed");
     } catch (err: any) {
-      console.log('erro completo:', err);
-      console.log('resposta do erro:', err.response?.data);
-      console.log('status:', err.response?.status);
       setError("Usuário ou senha inválidos");
     } finally {
       setLoading(false);
@@ -43,13 +38,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-yellow-400 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-2xl p-8">
+          {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-3 rounded-2xl relative shadow-lg mb-3">
-              <Activity className="w-8 h-8 text-white" />
-              <Sparkles className="w-4 h-4 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
-            </div>
+            <img src="/logo.png" alt="Pulse" className="w-20 h-20 object-contain mb-2" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Pulse Festa
+              Pulse
             </h1>
             <p className="text-gray-400 text-sm mt-1">Entre na festa ✨</p>
           </div>
